@@ -1,10 +1,12 @@
 {
   "name": "ongaku",
   "version": "0.1.0",
-  "description": "A web audio helpers module",
+  "description": "A minimal module with helpers for audio element",
   "main": "index.js",
-  "scripts": {
-  },
   "author": "Arturo Coronel <aoitsu3@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "url": "https://github.com/datyayu/ongaku.git",
+    "type": "git"
+  }
 }

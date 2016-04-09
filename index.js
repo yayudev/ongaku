@@ -58,3 +58,6 @@ Ongaku.prototype.loadAudio = function(audioUrl) {
     this._isPlaying = true;
   }.bind(this), false);
 }
+
+
+module.exports = Ongaku;

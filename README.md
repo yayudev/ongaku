@@ -1,8 +1,8 @@
 # ongaku
-A web audio helpers module.
+A minimal module with helpers for audio element.
 
 ## Current state.
-On development.
+On development. You should really try other module or help me get this one ready :D
 
 ## TODO:
   - [ ] Support multiple formats.
