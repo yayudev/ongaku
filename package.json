@@ -1,6 +1,6 @@
 {
   "name": "ongaku",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A minimal module with helpers for audio element",
   "main": "index.js",
   "author": "Arturo Coronel <aoitsu3@gmail.com>",
