@@ -2,12 +2,20 @@
 A minimal module with helpers for audio element.
 
 ## Current state.
-On development. You should really try other module or help me get this one ready :D
+On development.
+Currently only works on browsers that support ES6 & AudioContext.
+You should really try other module or help me get this one ready :D
+
+## Supported methods.
+- playAudio(fileUrl: String)
+- play()
+- pause()
+- stop()
+- seek(time: Number)
+- seekPercentage(percentage: Number)
 
 ## TODO:
-  - [ ] Add support for play/pause.
-  - [ ] Add support for skip to n second.
   - [ ] Support multiple formats.
+  - [ ] Add transpile to ES5
   - [ ] Add more browser support.
   - [ ] Documentation.
-  - [ ] Publish on npm.
