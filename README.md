@@ -1,5 +1,5 @@
 # ongaku
-A minimal module with helpers for audio element.
+A small module with helpers for Web Audio API.
 
 ## Current state.
 On development.
