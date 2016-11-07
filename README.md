@@ -16,6 +16,5 @@ You should really try other module or help me get this one ready :D
 
 ## TODO:
   - [ ] Support multiple formats.
-  - [ ] Add transpile to ES5
   - [ ] Add more browser support.
   - [ ] Documentation.

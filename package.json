@@ -2,11 +2,24 @@
   "name": "ongaku",
   "version": "0.3.1",
   "description": "A small module with helpers for Web Audio",
-  "main": "index.js",
+  "main": "dist/index.js",
   "author": "Arturo Coronel <aoitsu3@gmail.com>",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/datyayu/ongaku.git",
     "type": "git"
+  },
+  "scripts": {
+    "start": "babel -w -o dist/index.js ./src/index.js",
+    "build": "babel -o dist/index.js ./src/index.js"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-plugin-transform-flow-strip-types": "^6.18.0",
+    "babel-preset-es2015": "^6.18.0"
+  },
+  "dependencies": {
+    "babel-cli": "^6.18.0",
+    "chokidar": "^1.6.1"
   }
 }
