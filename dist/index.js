@@ -8,12 +8,13 @@ var Ongaku = function () {
     function Ongaku(opts) {
         _classCallCheck(this, Ongaku);
 
-        if (!window.AudioContext) {
+        if (!window.AudioContext && !window.webkitAudioContext) {
             throw new Error('[Ongaku] Web Audio API not supported.');
         }
 
-        this._audioCtx = new window.AudioContext();
+        this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         this._callbacks = opts || {};
+        this._volume = opts && opts.volume >= 0 && opts.volume <= 100 ? opts.volume : 100;
 
         this._source;
         this._currentAudio;
@@ -21,6 +22,7 @@ var Ongaku = function () {
         this._startTime;
         this._isPlaying;
         this._buffer;
+        this._volumeGainNode = this._audioCtx.createGain();
 
         this._loadAudio = this._loadAudio.bind(this);
         this.playAudio = this.playAudio.bind(this);
@@ -29,6 +31,8 @@ var Ongaku = function () {
         this.stop = this.stop.bind(this);
         this.seek = this.seek.bind(this);
         this.seekPercentage = this.seekPercentage.bind(this);
+        this.setVolume = this.setVolume.bind(this);
+        this.mute = this.mute.bind(this);
     }
 
     _createClass(Ongaku, [{
@@ -79,7 +83,8 @@ var Ongaku = function () {
 
             this._source = this._audioCtx.createBufferSource();
             this._source.buffer = this._buffer;
-            this._source.connect(this._audioCtx.destination);
+            this._source.connect(this._volumeGainNode);
+            this._volumeGainNode.connect(this._audioCtx.destination);
             this._source.onended = function () {
                 return _this3.onEnd();
             };
@@ -136,7 +141,7 @@ var Ongaku = function () {
             if (this._isPlaying) {
                 this.pause();
                 this._playbackTime = time;
-                setTimeout(this.play, 100); // <--
+                setTimeout(this.play, 100); // <-- Browser requires a little time to process the pause and seek.
             } else {
                 this._playbackTime = time;
             }
@@ -158,12 +163,35 @@ var Ongaku = function () {
         value: function onEnd() {
             this._callbacks.onPlaybackEnd();
         }
+    }, {
+        key: 'setVolume',
+        value: function setVolume(volumeLevel) {
+            if (volumeLevel < 0 || volumeLevel > 100) {
+                return console.error('[Ongaku] Error, volume can be set only with values between 0 and 100');
+            }
+
+            this._volume = volumeLevel / 100;
+            this._volumeGainNode.gain.value = this._volume;
+        }
+    }, {
+        key: 'mute',
+        value: function mute() {
+            this._volumeGainNode.gain.value = 0;
+        }
+    }, {
+        key: 'unmute',
+        value: function unmute() {
+            this._volumeGainNode.gain.value = this._volume;
+        }
     }]);
 
     return Ongaku;
 }();
 
-window.ongaku = new Ongaku({ onPlaybackStart: function onPlaybackStart() {
+// Test code
+
+window.ongaku = new Ongaku({ volume: 100,
+    onPlaybackStart: function onPlaybackStart() {
         return console.log('playback started');
     },
     onPlaybackPause: function onPlaybackPause() {
@@ -177,5 +205,8 @@ window.ongaku = new Ongaku({ onPlaybackStart: function onPlaybackStart() {
     },
     onPlaybackSeek: function onPlaybackSeek(time) {
         return console.log('playback seek', time);
+    },
+    onVolumeChange: function onVolumeChange(newLevel) {
+        return console.log('volume changed', newLevel);
     }
 });

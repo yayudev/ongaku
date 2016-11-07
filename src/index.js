@@ -1,10 +1,12 @@
 // @flow
 type OngakuOptions =
-    { onPlaybackStart: () => void
+    { volume: number
+    , onPlaybackStart: () => void
     , onPlaybackPause: () => void
     , onPlaybackStopped: () => void
     , onPlaybackEnd: () => void
     , onPlaybackSeek: (time: number) => void
+    , onVolumeChange: (newLevel: number) => void
     }
 ;
 
@@ -13,12 +15,14 @@ class Ongaku {
     _audioCtx: AudioContext;
     _source: AudioBufferSourceNode;
     _buffer: AudioBuffer;
+    _volumeGainNode: GainNode;
 
     _currentAudio: string;
     _playbackTime: number;
     _startTime: number;
     _isPlaying: boolean;
     _callbacks: OngakuOptions;
+    _volume: number;
 
     _loadAudio: (fileUrl: string) => Promise<AudioBuffer>;
     playAudio: (fileUrl: string) => void;
@@ -27,15 +31,18 @@ class Ongaku {
     stop: () => void;
     seek: (time: number) => void;
     seekPercentage: (percentage: number) => void;
+    setVolume: (volumeLevel: number) => void;
+    mute: () => void;
 
 
     constructor(opts: OngakuOptions) {
-        if (!window.AudioContext) {
+        if (!window.AudioContext && !window.webkitAudioContext) {
             throw new Error('[Ongaku] Web Audio API not supported.');
         }
 
-        this._audioCtx = new (window.AudioContext)();
+        this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         this._callbacks = opts || {};
+        this._volume = (opts && opts.volume >= 0 && opts.volume <= 100) ? opts.volume : 100;
 
         this._source;
         this._currentAudio;
@@ -43,6 +50,7 @@ class Ongaku {
         this._startTime;
         this._isPlaying;
         this._buffer;
+        this._volumeGainNode = this._audioCtx.createGain();
 
         this._loadAudio = this._loadAudio.bind(this);
         this.playAudio = this.playAudio.bind(this);
@@ -51,6 +59,8 @@ class Ongaku {
         this.stop = this.stop.bind(this);
         this.seek = this.seek.bind(this);
         this.seekPercentage = this.seekPercentage.bind(this);
+        this.setVolume = this.setVolume.bind(this);
+        this.mute = this.mute.bind(this);
     }
 
 
@@ -93,7 +103,8 @@ class Ongaku {
 
         this._source = this._audioCtx.createBufferSource();
         this._source.buffer = this._buffer;
-        this._source.connect(this._audioCtx.destination);
+        this._source.connect(this._volumeGainNode);
+        this._volumeGainNode.connect(this._audioCtx.destination);
         this._source.onended = () => this.onEnd();
 
         this._isPlaying = true;
@@ -171,16 +182,37 @@ class Ongaku {
     onEnd(): void {
         this._callbacks.onPlaybackEnd();
     }
+
+
+    setVolume(volumeLevel: number): void {
+        if (volumeLevel < 0 || volumeLevel > 100) {
+            return console.error('[Ongaku] Error, volume can be set only with values between 0 and 100');
+        }
+
+        this._volume = (volumeLevel / 100);
+        this._volumeGainNode.gain.value = this._volume;
+    }
+
+
+    mute(): void {
+        this._volumeGainNode.gain.value = 0;
+    }
+
+    unmute(): void {
+        this._volumeGainNode.gain.value = this._volume;
+    }
 }
 
 
-// Test purposes
-//
-// window.ongaku = new Ongaku(
-//     { onPlaybackStart: () => console.log('playback started')
-//     , onPlaybackPause: () => console.log('playback paused')
-//     , onPlaybackStopped: () => console.log('playback stopped')
-//     , onPlaybackEnd: () => console.log('playback ended')
-//     , onPlaybackSeek: (time: number) => console.log('playback seek', time)
-//     }
-// );
+// Test code
+
+window.ongaku = new Ongaku(
+    { volume: 100
+    , onPlaybackStart: () => console.log('playback started')
+    , onPlaybackPause: () => console.log('playback paused')
+    , onPlaybackStopped: () => console.log('playback stopped')
+    , onPlaybackEnd: () => console.log('playback ended')
+    , onPlaybackSeek: (time: number) => console.log('playback seek', time)
+    , onVolumeChange: (newLevel: number) => console.log('volume changed', newLevel)
+    }
+);
