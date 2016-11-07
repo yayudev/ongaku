@@ -111,7 +111,9 @@ export default class Ongaku {
         this._startTime = Date.now();
         this._source.start(0, this._playbackTime); // Play at current offset (defaults to 0)
 
-        this._callbacks.onPlaybackStart();
+        if (this._callbacks.onPlaybackStart) {
+            this._callbacks.onPlaybackStart();
+        }
     }
 
 
@@ -124,7 +126,9 @@ export default class Ongaku {
 
         this._playbackTime = (Date.now() - this._startTime)/1000 + this._playbackTime;
 
-        this._callbacks.onPlaybackPause();
+        if (this._callbacks.onPlaybackPause) {
+            this._callbacks.onPlaybackPause();
+        }
     }
 
 
@@ -140,8 +144,6 @@ export default class Ongaku {
         const time = this._source.buffer.duration * (percentage/100);
 
         this.seek(time);
-        this._callbacks.onPlaybackSeek(time);
-
     }
 
 
@@ -165,7 +167,9 @@ export default class Ongaku {
             this._playbackTime = time;
         }
 
-        this._callbacks.onPlaybackSeek(time);
+        if (this._callbacks.onPlaybackSeek) {
+            this._callbacks.onPlaybackSeek(time);
+        }
     }
 
 
@@ -174,13 +178,18 @@ export default class Ongaku {
         if (!this._source) return;
 
         this._source.stop(0);
-        this._callbacks.onPlaybackStopped();
         this._isPlaying = false;
+
+        if (this._callbacks.onPlaybackStopped) {
+            this._callbacks.onPlaybackStopped();
+        }
     }
 
 
     onEnd(): void {
-        this._callbacks.onPlaybackEnd();
+        if (this._callbacks.onPlaybackEnd) {
+            this._callbacks.onPlaybackEnd();
+        }
     }
 
 
@@ -191,6 +200,10 @@ export default class Ongaku {
 
         this._volume = (volumeLevel / 100);
         this._volumeGainNode.gain.value = this._volume;
+
+        if (this._callbacks.onVolumeChange) {
+            this._callbacks.onVolumeChange(volumeLevel);
+        }
     }
 
 
