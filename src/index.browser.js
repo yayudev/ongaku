@@ -11,7 +11,7 @@ type OngakuOptions =
 ;
 
 
-export default class Ongaku {
+window.Ongaku = class Ongaku {
     _audioCtx: AudioContext;
     _source: AudioBufferSourceNode;
     _buffer: AudioBuffer;
