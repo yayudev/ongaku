@@ -211,7 +211,23 @@ export default class Ongaku {
         this._volumeGainNode.gain.value = 0;
     }
 
+
     unmute(): void {
         this._volumeGainNode.gain.value = this._volume;
+    }
+
+
+    getPlaybackTime(): number {
+        if (!this._source) {
+            console.error('[Ongaku] Error, you should load an audio file before getting the playback time');
+            return 0;
+        }
+
+        if (this._isPlaying) {
+            this.pause();
+            this.play();
+        }
+
+        return this._playbackTime;
     }
 }

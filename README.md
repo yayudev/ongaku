@@ -50,6 +50,7 @@ ongaku.playAudio('/sample/path/to/my-audio.mp3');
 , onPlaybackEnd: () => void // Called when the buffer ends
 , onPlaybackSeek: (time: number) => void // Called after a seek
 , onVolumeChange: (newLevel: number) => void // When the volume changes (not called on mute)
+, getPlaybackTime: () => (time: number) // Current playback time
 }
 ```
 
