@@ -40,10 +40,11 @@ ongaku.playAudio('/sample/path/to/my-audio.mp3');
 - setVolume(volumeLevel: number) // 0 - 100
 - mute()
 - unmute()
+- getPlaybackTime() // current track playing time (in seconds)
 
 ## Supported options
 ```js
-{ volume: number
+{ volume: number // The default volume, 0-100
 , onPlaybackStart: () => void // Called when buffer starts playing
 , onPlaybackPause: () => void // Called when buffer is paused
 , onPlaybackStopped: () => void // Called when buffer is stopped

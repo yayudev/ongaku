@@ -18,11 +18,11 @@ var Ongaku = function () {
 
         this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         this._callbacks = opts || {};
-        this._volume = opts && opts.volume && opts.volume >= 0 && opts.volume <= 100 ? opts.volume : 100;
+        this._volume = opts && opts.volume !== undefined && opts.volume >= 0 && opts.volume <= 100 ? opts.volume / 100 : 1;
 
         this._source;
         this._currentAudio;
-        this._playbackTime;
+        this._onPausePlaybackTime;
         this._startTime;
         this._isPlaying;
         this._buffer;
@@ -55,6 +55,11 @@ var Ongaku = function () {
             });
         }
     }, {
+        key: '_getUpdatedPlaybackTime',
+        value: function _getUpdatedPlaybackTime() {
+            return (Date.now() - this._startTime) / 1000 + this._onPausePlaybackTime;
+        }
+    }, {
         key: 'playAudio',
         value: function playAudio(fileUrl) {
             var _this2 = this;
@@ -66,7 +71,7 @@ var Ongaku = function () {
             this.stop();
             this._currentAudio = fileUrl;
             this._isPlaying = false;
-            this._playbackTime = 0;
+            this._onPausePlaybackTime = 0;
 
             this._loadAudio(fileUrl).then(function (buffer) {
                 _this2._buffer = buffer;
@@ -85,6 +90,8 @@ var Ongaku = function () {
                 return console.error('[Ongaku] You need to load an audio file before using play()');
             }
 
+            this._volumeGainNode.gain.value = this._volume;
+
             this._source = this._audioCtx.createBufferSource();
             this._source.buffer = this._buffer;
             this._source.connect(this._volumeGainNode);
@@ -95,7 +102,7 @@ var Ongaku = function () {
 
             this._isPlaying = true;
             this._startTime = Date.now();
-            this._source.start(0, this._playbackTime); // Play at current offset (defaults to 0)
+            this._source.start(0, this._onPausePlaybackTime); // Play at current offset (defaults to 0)
 
             if (this._callbacks.onPlaybackStart) {
                 this._callbacks.onPlaybackStart();
@@ -109,8 +116,8 @@ var Ongaku = function () {
 
             this._source.stop();
             this._isPlaying = false;
-
-            this._playbackTime = (Date.now() - this._startTime) / 1000 + this._playbackTime;
+            this._pauseTime = Date.now();
+            this._onPausePlaybackTime = this._getUpdatedPlaybackTime();
 
             if (this._callbacks.onPlaybackPause) {
                 this._callbacks.onPlaybackPause();
@@ -147,10 +154,10 @@ var Ongaku = function () {
 
             if (this._isPlaying) {
                 this.pause();
-                this._playbackTime = time;
+                this._onPausePlaybackTime = time;
                 setTimeout(this.play, 100); // <-- Browser requires a little time to process the pause and seek.
             } else {
-                this._playbackTime = time;
+                this._onPausePlaybackTime = time;
             }
 
             if (this._callbacks.onPlaybackSeek) {
@@ -165,6 +172,7 @@ var Ongaku = function () {
 
             this._source.stop(0);
             this._isPlaying = false;
+            this._onPausePlaybackTime = 0;
 
             if (this._callbacks.onPlaybackStopped) {
                 this._callbacks.onPlaybackStopped();
@@ -209,9 +217,11 @@ var Ongaku = function () {
                 return 0;
             }
 
-            console.log('hello world');
+            if (this._isPlaying) {
+                return this._getUpdatedPlaybackTime();
+            }
 
-            return this._playbackTime;
+            return this._onPausePlaybackTime;
         }
     }]);
 
@@ -219,6 +229,3 @@ var Ongaku = function () {
 }();
 
 exports.default = Ongaku;
-
-
-window.ongaku = new Ongaku();

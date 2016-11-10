@@ -43,7 +43,9 @@ window.Ongaku = class Ongaku {
 
         this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         this._callbacks = opts || {};
-        this._volume = (opts && opts.volume && opts.volume >= 0 && opts.volume <= 100) ? opts.volume : 100;
+        this._volume = (opts && opts.volume !== undefined && opts.volume >= 0 && opts.volume <= 100)
+            ? (opts.volume/100)
+            : 1;
 
         this._source;
         this._currentAudio;
@@ -105,6 +107,7 @@ window.Ongaku = class Ongaku {
            return console.error('[Ongaku] You need to load an audio file before using play()');
         }
 
+        this._volumeGainNode.gain.value = this._volume;
 
         this._source = this._audioCtx.createBufferSource();
         this._source.buffer = this._buffer;
@@ -228,11 +231,10 @@ window.Ongaku = class Ongaku {
             return 0;
         }
 
-        this._playbackTime = this._getUpdatedPlaybackTime();
-        debugger;
+        if (this._isPlaying) {
+            return this._getUpdatedPlaybackTime();
+        }
+
         return this._playbackTime;
     }
 }
-
-
-window.ongaku = new window.Ongaku();

@@ -14,7 +14,7 @@ window.Ongaku = function () {
 
         this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         this._callbacks = opts || {};
-        this._volume = opts && opts.volume && opts.volume >= 0 && opts.volume <= 100 ? opts.volume : 100;
+        this._volume = opts && opts.volume !== undefined && opts.volume >= 0 && opts.volume <= 100 ? opts.volume / 100 : 1;
 
         this._source;
         this._currentAudio;
@@ -53,7 +53,6 @@ window.Ongaku = function () {
     }, {
         key: '_getUpdatedPlaybackTime',
         value: function _getUpdatedPlaybackTime() {
-            debugger;
             return (Date.now() - this._startTime) / 1000 + this._playbackTime;
         }
     }, {
@@ -86,6 +85,8 @@ window.Ongaku = function () {
             if (!this._buffer) {
                 return console.error('[Ongaku] You need to load an audio file before using play()');
             }
+
+            this._volumeGainNode.gain.value = this._volume;
 
             this._source = this._audioCtx.createBufferSource();
             this._source.buffer = this._buffer;
@@ -211,13 +212,13 @@ window.Ongaku = function () {
                 return 0;
             }
 
-            this._playbackTime = this._getUpdatedPlaybackTime();
+            if (this._isPlaying) {
+                return this._getUpdatedPlaybackTime();
+            }
+
             return this._playbackTime;
         }
     }]);
 
     return Ongaku;
 }();
-
-
-window.ongaku = new Ongaku();
