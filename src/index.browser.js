@@ -1,12 +1,12 @@
 // @flow
 type OngakuOptions =
-    { volume: number
-    , onPlaybackStart: () => void
-    , onPlaybackPause: () => void
-    , onPlaybackStopped: () => void
-    , onPlaybackEnd: () => void
-    , onPlaybackSeek: (time: number) => void
-    , onVolumeChange: (newLevel: number) => void
+    { volume?: number
+    , onPlaybackStart?: () => void
+    , onPlaybackPause?: () => void
+    , onPlaybackStopped?: () => void
+    , onPlaybackEnd?: () => void
+    , onPlaybackSeek?: (time: number) => void
+    , onVolumeChange?: (newLevel: number) => void
     }
 ;
 
@@ -20,6 +20,7 @@ window.Ongaku = class Ongaku {
     _currentAudio: string;
     _playbackTime: number;
     _startTime: number;
+    _pauseTime: number;
     _isPlaying: boolean;
     _callbacks: OngakuOptions;
     _volume: number;
@@ -35,14 +36,14 @@ window.Ongaku = class Ongaku {
     mute: () => void;
 
 
-    constructor(opts: OngakuOptions) {
+    constructor(opts?: OngakuOptions) {
         if (!window.AudioContext && !window.webkitAudioContext) {
             throw new Error('[Ongaku] Web Audio API not supported.');
         }
 
         this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         this._callbacks = opts || {};
-        this._volume = (opts && opts.volume >= 0 && opts.volume <= 100) ? opts.volume : 100;
+        this._volume = (opts && opts.volume && opts.volume >= 0 && opts.volume <= 100) ? opts.volume : 100;
 
         this._source;
         this._currentAudio;
@@ -72,6 +73,10 @@ window.Ongaku = class Ongaku {
                     decodedBuffer => resolve(decodedBuffer)
                 );
             }));
+    }
+
+    _getUpdatedPlaybackTime(): number {
+        return (Date.now() - this._startTime)/1000 + this._playbackTime;
     }
 
 
@@ -123,8 +128,8 @@ window.Ongaku = class Ongaku {
 
         this._source.stop();
         this._isPlaying = false;
-
-        this._playbackTime = (Date.now() - this._startTime)/1000 + this._playbackTime;
+        this._pauseTime = Date.now();
+        this._playbackTime = this._getUpdatedPlaybackTime();
 
         if (this._callbacks.onPlaybackPause) {
             this._callbacks.onPlaybackPause();
@@ -211,7 +216,23 @@ window.Ongaku = class Ongaku {
         this._volumeGainNode.gain.value = 0;
     }
 
+
     unmute(): void {
         this._volumeGainNode.gain.value = this._volume;
     }
+
+
+    getPlaybackTime(): number {
+        if (!this._source) {
+            console.error('[Ongaku] Error, you should load an audio file before getting the playback time');
+            return 0;
+        }
+
+        this._playbackTime = this._getUpdatedPlaybackTime();
+        debugger;
+        return this._playbackTime;
+    }
 }
+
+
+window.ongaku = new window.Ongaku();

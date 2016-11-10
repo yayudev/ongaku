@@ -1,12 +1,12 @@
 // @flow
 type OngakuOptions =
-    { volume: number
-    , onPlaybackStart: () => void
-    , onPlaybackPause: () => void
-    , onPlaybackStopped: () => void
-    , onPlaybackEnd: () => void
-    , onPlaybackSeek: (time: number) => void
-    , onVolumeChange: (newLevel: number) => void
+    { volume?: number
+    , onPlaybackStart?: () => void
+    , onPlaybackPause?: () => void
+    , onPlaybackStopped?: () => void
+    , onPlaybackEnd?: () => void
+    , onPlaybackSeek?: (time: number) => void
+    , onVolumeChange?: (newLevel: number) => void
     }
 ;
 
@@ -35,14 +35,14 @@ export default class Ongaku {
     mute: () => void;
 
 
-    constructor(opts: OngakuOptions) {
+    constructor(opts?: OngakuOptions) {
         if (!window.AudioContext && !window.webkitAudioContext) {
             throw new Error('[Ongaku] Web Audio API not supported.');
         }
 
         this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         this._callbacks = opts || {};
-        this._volume = (opts && opts.volume >= 0 && opts.volume <= 100) ? opts.volume : 100;
+        this._volume = (opts && opts.volume && opts.volume >= 0 && opts.volume <= 100) ? opts.volume : 100;
 
         this._source;
         this._currentAudio;
@@ -223,11 +223,11 @@ export default class Ongaku {
             return 0;
         }
 
-        if (this._isPlaying) {
-            this.pause();
-            this.play();
-        }
+        console.log('hello world')
 
         return this._playbackTime;
     }
 }
+
+
+window.ongaku = new Ongaku();

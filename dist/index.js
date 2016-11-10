@@ -18,7 +18,7 @@ var Ongaku = function () {
 
         this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         this._callbacks = opts || {};
-        this._volume = opts && opts.volume >= 0 && opts.volume <= 100 ? opts.volume : 100;
+        this._volume = opts && opts.volume && opts.volume >= 0 && opts.volume <= 100 ? opts.volume : 100;
 
         this._source;
         this._currentAudio;
@@ -201,9 +201,24 @@ var Ongaku = function () {
         value: function unmute() {
             this._volumeGainNode.gain.value = this._volume;
         }
+    }, {
+        key: 'getPlaybackTime',
+        value: function getPlaybackTime() {
+            if (!this._source) {
+                console.error('[Ongaku] Error, you should load an audio file before getting the playback time');
+                return 0;
+            }
+
+            console.log('hello world');
+
+            return this._playbackTime;
+        }
     }]);
 
     return Ongaku;
 }();
 
 exports.default = Ongaku;
+
+
+window.ongaku = new Ongaku();
