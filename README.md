@@ -4,7 +4,7 @@ A helper module for using the Web Audio API as an audio file player.
 
 ## Current state.
 On development.
-Currently only works on browsers that support AudioContext / WebkitAudioContext.
+Currently only works on browsers that support AudioContext / WebkitAudioContext. Support for `<audio>` tag upcoming.
 
 
 ## Installation
@@ -12,17 +12,18 @@ Currently only works on browsers that support AudioContext / WebkitAudioContext.
 $ npm install ongaku
 ```
 
-If you don't want to use npm, you can grab the browser global version at `dist/index.brower.js`.
+If you don't want to use npm, you can grab the browser global version from (here)[https://github.com/datyayu/ongaku/blob/master/dist/index.browser.js].
 
 
 ## Usage
 ```js
 import Ongaku from 'ongaku';
 
-var opts = {
+const opts = {
   onPlaybackEnd: function() {
     console.log('ended');
-  }
+  },
+  volume: 50,
 };
 
 const ongaku = new Ongaku(opts);
