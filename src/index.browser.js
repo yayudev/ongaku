@@ -18,7 +18,7 @@ window.Ongaku = class Ongaku {
     _volumeGainNode: GainNode;
 
     _currentAudio: string;
-    _playbackTime: number;
+    _onPausePlaybackTime: number;
     _startTime: number;
     _pauseTime: number;
     _isPlaying: boolean;
@@ -49,7 +49,7 @@ window.Ongaku = class Ongaku {
 
         this._source;
         this._currentAudio;
-        this._playbackTime;
+        this._onPausePlaybackTime;
         this._startTime;
         this._isPlaying;
         this._buffer;
@@ -77,8 +77,16 @@ window.Ongaku = class Ongaku {
             }));
     }
 
+    _onEnd(): void {
+        this.stop();
+
+        if (this._callbacks.onPlaybackEnd) {
+            this._callbacks.onPlaybackEnd();
+        }
+    }
+
     _getUpdatedPlaybackTime(): number {
-        return (Date.now() - this._startTime)/1000 + this._playbackTime;
+        return (Date.now() - this._startTime)/1000 + this._onPausePlaybackTime;
     }
 
 
@@ -90,7 +98,7 @@ window.Ongaku = class Ongaku {
         this.stop();
         this._currentAudio = fileUrl;
         this._isPlaying = false;
-        this._playbackTime = 0;
+        this._onPausePlaybackTime = 0;
 
         this._loadAudio(fileUrl)
           .then(buffer => {
@@ -113,11 +121,11 @@ window.Ongaku = class Ongaku {
         this._source.buffer = this._buffer;
         this._source.connect(this._volumeGainNode);
         this._volumeGainNode.connect(this._audioCtx.destination);
-        this._source.onended = () => this.onEnd();
+        this._source.onended = () => this._onEnd();
 
         this._isPlaying = true;
         this._startTime = Date.now();
-        this._source.start(0, this._playbackTime); // Play at current offset (defaults to 0)
+        this._source.start(0, this._onPausePlaybackTime); // Play at current offset (defaults to 0)
 
         if (this._callbacks.onPlaybackStart) {
             this._callbacks.onPlaybackStart();
@@ -132,7 +140,7 @@ window.Ongaku = class Ongaku {
         this._source.stop();
         this._isPlaying = false;
         this._pauseTime = Date.now();
-        this._playbackTime = this._getUpdatedPlaybackTime();
+        this._onPausePlaybackTime = this._getUpdatedPlaybackTime();
 
         if (this._callbacks.onPlaybackPause) {
             this._callbacks.onPlaybackPause();
@@ -169,10 +177,10 @@ window.Ongaku = class Ongaku {
 
         if (this._isPlaying) {
             this.pause();
-            this._playbackTime = time;
+            this._onPausePlaybackTime = time;
             setTimeout(this.play, 100); // <-- Browser requires a little time to process the pause and seek.
         } else {
-            this._playbackTime = time;
+            this._onPausePlaybackTime = time;
         }
 
         if (this._callbacks.onPlaybackSeek) {
@@ -187,16 +195,10 @@ window.Ongaku = class Ongaku {
 
         this._source.stop(0);
         this._isPlaying = false;
+        this._onPausePlaybackTime = 0;
 
         if (this._callbacks.onPlaybackStopped) {
             this._callbacks.onPlaybackStopped();
-        }
-    }
-
-
-    onEnd(): void {
-        if (this._callbacks.onPlaybackEnd) {
-            this._callbacks.onPlaybackEnd();
         }
     }
 
@@ -235,6 +237,6 @@ window.Ongaku = class Ongaku {
             return this._getUpdatedPlaybackTime();
         }
 
-        return this._playbackTime;
+        return this._onPausePlaybackTime;
     }
 }

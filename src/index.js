@@ -77,6 +77,14 @@ export default class Ongaku {
             }));
     }
 
+    _onEnd(): void {
+        this.stop();
+
+        if (this._callbacks.onPlaybackEnd) {
+            this._callbacks.onPlaybackEnd();
+        }
+    }
+
     _getUpdatedPlaybackTime(): number {
         return (Date.now() - this._startTime)/1000 + this._onPausePlaybackTime;
     }
@@ -113,7 +121,7 @@ export default class Ongaku {
         this._source.buffer = this._buffer;
         this._source.connect(this._volumeGainNode);
         this._volumeGainNode.connect(this._audioCtx.destination);
-        this._source.onended = () => this.onEnd();
+        this._source.onended = () => this._onEnd();
 
         this._isPlaying = true;
         this._startTime = Date.now();
@@ -191,13 +199,6 @@ export default class Ongaku {
 
         if (this._callbacks.onPlaybackStopped) {
             this._callbacks.onPlaybackStopped();
-        }
-    }
-
-
-    onEnd(): void {
-        if (this._callbacks.onPlaybackEnd) {
-            this._callbacks.onPlaybackEnd();
         }
     }
 
