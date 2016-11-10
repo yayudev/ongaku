@@ -12,7 +12,7 @@ Currently only works on browsers that support AudioContext / WebkitAudioContext.
 $ npm install ongaku
 ```
 
-If you don't want to use npm, you can grab the browser global version from (here)[https://github.com/datyayu/ongaku/blob/master/dist/index.browser.js].
+If you don't want to use npm, you can grab the browser global version from [here](https://github.com/datyayu/ongaku/blob/master/dist/index.browser.js).
 
 
 ## Usage
