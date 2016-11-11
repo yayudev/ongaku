@@ -18,21 +18,26 @@ window.Ongaku = function () {
 
         this._source;
         this._currentAudio;
-        this._playbackTime;
+        this._onPausePlaybackTime;
         this._startTime;
         this._isPlaying;
         this._buffer;
         this._volumeGainNode = this._audioCtx.createGain();
 
         this._loadAudio = this._loadAudio.bind(this);
+        this._onEnd = this._onEnd.bind(this);
+        this._getUpdatedPlaybackTime = this._getUpdatedPlaybackTime.bind(this);
+
         this.playAudio = this.playAudio.bind(this);
         this.play = this.play.bind(this);
         this.pause = this.pause.bind(this);
-        this.stop = this.stop.bind(this);
-        this.seek = this.seek.bind(this);
         this.seekPercentage = this.seekPercentage.bind(this);
+        this.seek = this.seek.bind(this);
+        this.stop = this.stop.bind(this);
         this.setVolume = this.setVolume.bind(this);
         this.mute = this.mute.bind(this);
+        this.getPlaybackTime = this.getPlaybackTime.bind(this);
+        this.isPlaying = this.isPlaying.bind(this);
     }
 
     _createClass(Ongaku, [{
@@ -51,9 +56,18 @@ window.Ongaku = function () {
             });
         }
     }, {
+        key: '_onEnd',
+        value: function _onEnd() {
+            this.stop();
+
+            if (this._callbacks.onPlaybackEnd) {
+                this._callbacks.onPlaybackEnd();
+            }
+        }
+    }, {
         key: '_getUpdatedPlaybackTime',
         value: function _getUpdatedPlaybackTime() {
-            return (Date.now() - this._startTime) / 1000 + this._playbackTime;
+            return (Date.now() - this._startTime) / 1000 + this._onPausePlaybackTime;
         }
     }, {
         key: 'playAudio',
@@ -67,7 +81,7 @@ window.Ongaku = function () {
             this.stop();
             this._currentAudio = fileUrl;
             this._isPlaying = false;
-            this._playbackTime = 0;
+            this._onPausePlaybackTime = 0;
 
             this._loadAudio(fileUrl).then(function (buffer) {
                 _this2._buffer = buffer;
@@ -93,12 +107,12 @@ window.Ongaku = function () {
             this._source.connect(this._volumeGainNode);
             this._volumeGainNode.connect(this._audioCtx.destination);
             this._source.onended = function () {
-                return _this3.onEnd();
+                return _this3._onEnd();
             };
 
             this._isPlaying = true;
             this._startTime = Date.now();
-            this._source.start(0, this._playbackTime); // Play at current offset (defaults to 0)
+            this._source.start(0, this._onPausePlaybackTime); // Play at current offset (defaults to 0)
 
             if (this._callbacks.onPlaybackStart) {
                 this._callbacks.onPlaybackStart();
@@ -110,10 +124,11 @@ window.Ongaku = function () {
             if (!this._isPlaying) return;
             if (!this._source) return;
 
+            this._source.onended = function () {};
             this._source.stop();
             this._isPlaying = false;
             this._pauseTime = Date.now();
-            this._playbackTime = this._getUpdatedPlaybackTime();
+            this._onPausePlaybackTime = this._getUpdatedPlaybackTime();
 
             if (this._callbacks.onPlaybackPause) {
                 this._callbacks.onPlaybackPause();
@@ -150,10 +165,10 @@ window.Ongaku = function () {
 
             if (this._isPlaying) {
                 this.pause();
-                this._playbackTime = time;
+                this._onPausePlaybackTime = time;
                 setTimeout(this.play, 100); // <-- Browser requires a little time to process the pause and seek.
             } else {
-                this._playbackTime = time;
+                this._onPausePlaybackTime = time;
             }
 
             if (this._callbacks.onPlaybackSeek) {
@@ -166,18 +181,13 @@ window.Ongaku = function () {
             if (!this._isPlaying) return;
             if (!this._source) return;
 
+            this._source.onended = function () {};
             this._source.stop(0);
             this._isPlaying = false;
+            this._onPausePlaybackTime = 0;
 
             if (this._callbacks.onPlaybackStopped) {
                 this._callbacks.onPlaybackStopped();
-            }
-        }
-    }, {
-        key: 'onEnd',
-        value: function onEnd() {
-            if (this._callbacks.onPlaybackEnd) {
-                this._callbacks.onPlaybackEnd();
             }
         }
     }, {
@@ -216,7 +226,12 @@ window.Ongaku = function () {
                 return this._getUpdatedPlaybackTime();
             }
 
-            return this._playbackTime;
+            return this._onPausePlaybackTime;
+        }
+    }, {
+        key: 'isPlaying',
+        value: function isPlaying() {
+            return this._isPlaying;
         }
     }]);
 

@@ -26,6 +26,8 @@ export default class Ongaku {
     _volume: number;
 
     _loadAudio: (fileUrl: string) => Promise<AudioBuffer>;
+    _onEnd: () => void;
+    _getUpdatedPlaybackTime: () => number;
     playAudio: (fileUrl: string) => void;
     play: () => void;
     pause: () => void;
@@ -34,6 +36,9 @@ export default class Ongaku {
     seekPercentage: (percentage: number) => void;
     setVolume: (volumeLevel: number) => void;
     mute: () => void;
+    unmute: () => void;
+    getPlaybackTime: () => number;
+    isPlaying: () => boolean;
 
 
     constructor(opts?: OngakuOptions) {
@@ -56,14 +61,19 @@ export default class Ongaku {
         this._volumeGainNode = this._audioCtx.createGain();
 
         this._loadAudio = this._loadAudio.bind(this);
+        this._onEnd = this._onEnd.bind(this);
+        this._getUpdatedPlaybackTime = this._getUpdatedPlaybackTime.bind(this);
+
         this.playAudio = this.playAudio.bind(this);
         this.play = this.play.bind(this);
         this.pause = this.pause.bind(this);
-        this.stop = this.stop.bind(this);
-        this.seek = this.seek.bind(this);
         this.seekPercentage = this.seekPercentage.bind(this);
+        this.seek = this.seek.bind(this);
+        this.stop = this.stop.bind(this);
         this.setVolume = this.setVolume.bind(this);
         this.mute = this.mute.bind(this);
+        this.getPlaybackTime = this.getPlaybackTime.bind(this);
+        this.isPlaying = this.isPlaying.bind(this);
     }
 
 
@@ -137,6 +147,7 @@ export default class Ongaku {
         if (!this._isPlaying) return;
         if (!this._source) return;
 
+        this._source.onended = () => {};
         this._source.stop();
         this._isPlaying = false;
         this._pauseTime = Date.now();
@@ -193,9 +204,11 @@ export default class Ongaku {
         if (!this._isPlaying) return;
         if (!this._source) return;
 
+        this._source.onended = () => {};
         this._source.stop(0);
         this._isPlaying = false;
         this._onPausePlaybackTime = 0;
+
 
         if (this._callbacks.onPlaybackStopped) {
             this._callbacks.onPlaybackStopped();
@@ -238,5 +251,9 @@ export default class Ongaku {
         }
 
         return this._onPausePlaybackTime;
+    }
+
+    isPlaying(): boolean {
+        return this._isPlaying;
     }
 }

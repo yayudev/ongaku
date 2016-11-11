@@ -42,6 +42,7 @@ ongaku.playAudio('/sample/path/to/my-audio.mp3');
 - mute()
 - unmute()
 - getPlaybackTime() // current track playing time (in seconds)
+- isPlaying() // Current playback status
 
 ## Supported options
 ```js
