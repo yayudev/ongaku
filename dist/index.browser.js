@@ -38,6 +38,7 @@ window.Ongaku = function () {
         this.mute = this.mute.bind(this);
         this.getPlaybackTime = this.getPlaybackTime.bind(this);
         this.isPlaying = this.isPlaying.bind(this);
+        this.getCurrentBufferDuration = this.getCurrentBufferDuration.bind(this);
     }
 
     _createClass(Ongaku, [{
@@ -85,6 +86,11 @@ window.Ongaku = function () {
 
             this._loadAudio(fileUrl).then(function (buffer) {
                 _this2._buffer = buffer;
+
+                if (_this2._callbacks.onBufferLoaded) {
+                    _this2._callbacks.onBufferLoaded();
+                }
+
                 _this2.play();
             }).catch(function (e) {
                 return console.error(e);
@@ -232,6 +238,16 @@ window.Ongaku = function () {
         key: 'isPlaying',
         value: function isPlaying() {
             return this._isPlaying;
+        }
+    }, {
+        key: 'getCurrentBufferDuration',
+        value: function getCurrentBufferDuration() {
+            if (!this._buffer) {
+                console.error('[Ongaku] Error, you should load an audio file before getting the duration');
+                return 0;
+            }
+
+            return this._buffer.duration;
         }
     }]);
 

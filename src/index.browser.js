@@ -1,6 +1,7 @@
 // @flow
 type OngakuOptions =
     { volume?: number
+    , onBufferLoaded?: () => void
     , onPlaybackStart?: () => void
     , onPlaybackPause?: () => void
     , onPlaybackStopped?: () => void
@@ -39,6 +40,7 @@ window.Ongaku = class Ongaku {
     unmute: () => void;
     getPlaybackTime: () => number;
     isPlaying: () => boolean;
+    getCurrentBufferDuration: () => number;
 
 
     constructor(opts?: OngakuOptions) {
@@ -74,6 +76,7 @@ window.Ongaku = class Ongaku {
         this.mute = this.mute.bind(this);
         this.getPlaybackTime = this.getPlaybackTime.bind(this);
         this.isPlaying = this.isPlaying.bind(this);
+        this.getCurrentBufferDuration = this.getCurrentBufferDuration.bind(this);
     }
 
 
@@ -111,11 +114,16 @@ window.Ongaku = class Ongaku {
         this._onPausePlaybackTime = 0;
 
         this._loadAudio(fileUrl)
-          .then(buffer => {
-              this._buffer = buffer;
-              this.play();
-          })
-          .catch(e => console.error(e));
+            .then(buffer => {
+                this._buffer = buffer;
+
+                if (this._callbacks.onBufferLoaded) {
+                    this._callbacks.onBufferLoaded();
+                }
+
+                this.play();
+            })
+            .catch(e => console.error(e));
     }
 
 
@@ -255,5 +263,14 @@ window.Ongaku = class Ongaku {
 
     isPlaying(): boolean {
         return this._isPlaying;
+    }
+
+    getCurrentBufferDuration(): number {
+        if (!this._buffer) {
+            console.error('[Ongaku] Error, you should load an audio file before getting the duration');
+            return 0;
+        }
+
+        return this._buffer.duration;
     }
 }

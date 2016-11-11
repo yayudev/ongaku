@@ -1,6 +1,6 @@
 {
   "name": "ongaku",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "A helper module for using the Web Audio API as an audio file player.",
   "main": "dist/index.js",
   "author": "Arturo Coronel <aoitsu3@gmail.com>",
